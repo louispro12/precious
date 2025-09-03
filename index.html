@@ -3,20 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mini TikTok</title>
+<title>Mini TikTok Web</title>
 <style>
-  body { margin: 0; background: #000; color: #fff; font-family: Arial; }
-  header { padding: 10px; text-align: center; font-size: 24px; }
-  #uploadSection { padding: 10px; text-align: center; }
-  #feed { display: flex; flex-direction: column; align-items: center; }
-  video { width: 100%; max-width: 400px; height: 500px; margin: 10px 0; border-radius: 10px; background: #000; }
-  .videoControls { display: flex; justify-content: space-between; width: 90%; max-width: 400px; margin-bottom: 20px; }
-  button { padding: 5px 10px; border-radius: 5px; border:none; cursor: pointer; }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:#000;color:#fff;font-family:Arial,sans-serif;overflow:hidden;}
+  #uploadSection{position:fixed;top:10px;width:100%;text-align:center;z-index:100;}
+  #uploadSection input{padding:5px;}
+  #feed{display:flex;flex-direction:column;align-items:center;scroll-snap-type:y mandatory;height:100vh;overflow-y:scroll;}
+  .videoContainer{position:relative;width:100%;height:100vh;scroll-snap-align:start;}
+  video{width:100%;height:100%;object-fit:cover;}
+  .overlay{position:absolute;right:10px;bottom:20px;display:flex;flex-direction:column;align-items:center;}
+  .overlay button{margin:10px;padding:10px;border:none;border-radius:50%;background:rgba(0,0,0,0.5);color:white;font-size:18px;cursor:pointer;}
+  .username{position:absolute;left:10px;bottom:20px;font-size:18px;background:rgba(0,0,0,0.4);padding:5px 10px;border-radius:5px;}
 </style>
 </head>
 <body>
-
-<header>Mini TikTok</header>
 
 <div id="uploadSection">
   <input type="file" id="videoFile" accept="video/*">
@@ -25,6 +26,7 @@
 
 <div id="feed"></div>
 
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
@@ -45,13 +47,13 @@
   const storage = firebase.storage();
   const auth = firebase.auth();
 
-  // 🔹 Simple Anonymous Login
-  auth.signInAnonymously().catch(err => console.error(err));
+  // 🔹 Anonymous login
+  auth.signInAnonymously().catch(console.error);
 
   const feedDiv = document.getElementById('feed');
 
-  // 🔹 Upload Video
-  async function uploadVideo() {
+  // 🔹 Upload video
+  async function uploadVideo(){
     const fileInput = document.getElementById('videoFile');
     const file = fileInput.files[0];
     if(!file) return alert("Pick a video first!");
@@ -60,57 +62,86 @@
     const url = await storageRef.getDownloadURL();
     await db.collection('videos').add({
       url: url,
-      likes: 0,
-      comments: [],
+      likes:0,
+      comments:[],
       timestamp: Date.now(),
-      userId: auth.currentUser.uid
+      user:'User'+Math.floor(Math.random()*1000)
     });
-    alert("Video uploaded!");
-    fileInput.value = '';
+    alert('Video uploaded!');
+    fileInput.value='';
   }
 
-  // 🔹 Render Feed
-  db.collection('videos').orderBy('timestamp','desc').onSnapshot(snapshot => {
-    feedDiv.innerHTML = '';
-    snapshot.forEach(doc => {
+  // 🔹 Render feed
+  function renderFeed(snapshot){
+    feedDiv.innerHTML='';
+    snapshot.forEach(doc=>{
       const data = doc.data();
       const container = document.createElement('div');
+      container.className='videoContainer';
+
       const videoEl = document.createElement('video');
       videoEl.src = data.url;
-      videoEl.controls = true;
-      videoEl.autoplay = false;
+      videoEl.autoplay = true;
       videoEl.loop = true;
-      
-      const controlsDiv = document.createElement('div');
-      controlsDiv.className = 'videoControls';
+      videoEl.muted = true;
+      videoEl.controls = false;
+
+      // Overlay buttons
+      const overlay = document.createElement('div');
+      overlay.className='overlay';
 
       const likeBtn = document.createElement('button');
-      likeBtn.textContent = `❤️ ${data.likes}`;
-      likeBtn.onclick = () => {
-        db.collection('videos').doc(doc.id).update({ likes: data.likes + 1 });
-      };
+      likeBtn.textContent='❤️ '+data.likes;
+      likeBtn.onclick = async ()=>{
+        await db.collection('videos').doc(doc.id).update({likes:data.likes+1});
+      }
 
       const commentBtn = document.createElement('button');
-      commentBtn.textContent = `💬 ${data.comments.length}`;
-      commentBtn.onclick = () => {
-        const comment = prompt("Enter your comment:");
-        if(comment) {
-          db.collection('videos').doc(doc.id).update({
-            comments: firebase.firestore.FieldValue.arrayUnion(comment)
+      commentBtn.textContent='💬 '+data.comments.length;
+      commentBtn.onclick = async ()=>{
+        const comment = prompt("Enter comment:");
+        if(comment){
+          await db.collection('videos').doc(doc.id).update({
+            comments:firebase.firestore.FieldValue.arrayUnion(comment)
           });
         }
-      };
+      }
 
-      controlsDiv.appendChild(likeBtn);
-      controlsDiv.appendChild(commentBtn);
+      overlay.appendChild(likeBtn);
+      overlay.appendChild(commentBtn);
+
+      const usernameDiv = document.createElement('div');
+      usernameDiv.className='username';
+      usernameDiv.textContent = data.user;
 
       container.appendChild(videoEl);
-      container.appendChild(controlsDiv);
+      container.appendChild(overlay);
+      container.appendChild(usernameDiv);
 
       feedDiv.appendChild(container);
     });
-  });
+  }
+
+  // 🔹 Listen for videos
+  db.collection('videos').orderBy('timestamp','desc').onSnapshot(renderFeed);
+
+  // 🔹 Auto-play video when in view
+  const observer = new IntersectionObserver(entries=>{
+    entries.forEach(entry=>{
+      const video = entry.target.querySelector('video');
+      if(entry.isIntersecting) video.play();
+      else video.pause();
+    });
+  },{threshold:0.8});
+
+  const observeVideos = ()=>{
+    document.querySelectorAll('.videoContainer').forEach(vc=>{
+      observer.observe(vc);
+    });
+  }
+
+  db.collection('videos').orderBy('timestamp','desc').onSnapshot(observeVideos);
 </script>
 
 </body>
-</html>
+  </html>
