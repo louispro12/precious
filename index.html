@@ -3,12 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mini TikTok Web</title>
+<title>Mini TikTok Web - Sample</title>
 <style>
   *{margin:0;padding:0;box-sizing:border-box;}
   body{background:#000;color:#fff;font-family:Arial,sans-serif;overflow:hidden;}
-  #uploadSection{position:fixed;top:10px;width:100%;text-align:center;z-index:100;}
-  #uploadSection input{padding:5px;}
   #feed{display:flex;flex-direction:column;align-items:center;scroll-snap-type:y mandatory;height:100vh;overflow-y:scroll;scroll-behavior:smooth;}
   .videoContainer{position:relative;width:100%;height:100vh;scroll-snap-align:start;display:flex;justify-content:center;align-items:center;background:#000;}
   video{width:100%;height:100%;object-fit:cover;border-radius:0;}
@@ -21,65 +19,37 @@
 </head>
 <body>
 
-<div id="uploadSection">
-  <input type="file" id="videoFile" accept="video/*">
-  <button onclick="uploadVideo()">Upload Video</button>
-</div>
-
 <div id="feed"></div>
 
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-
 <script>
-  // 🔹 Firebase Config
-  const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT.firebaseapp.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT.appspot.com",
-    messagingSenderId: "SENDER_ID",
-    appId: "APP_ID"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
-  const storage = firebase.storage();
-  const auth = firebase.auth();
-
-  // 🔹 Anonymous login
-  auth.signInAnonymously().catch(console.error);
+  const sampleVideos = [
+    {
+      url: "https://www.w3schools.com/html/mov_bbb.mp4",
+      user: "User123",
+      likes: 120,
+      comments: 12
+    },
+    {
+      url: "https://www.w3schools.com/html/movie.mp4",
+      user: "CoolGuy",
+      likes: 85,
+      comments: 8
+    },
+    {
+      url: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+      user: "JaneDoe",
+      likes: 200,
+      comments: 25
+    }
+  ];
 
   const feedDiv = document.getElementById('feed');
 
-  // 🔹 Upload video
-  async function uploadVideo(){
-    const fileInput = document.getElementById('videoFile');
-    const file = fileInput.files[0];
-    if(!file) return alert("Pick a video first!");
-    const storageRef = storage.ref('videos/' + Date.now() + '_' + file.name);
-    await storageRef.put(file);
-    const url = await storageRef.getDownloadURL();
-    await db.collection('videos').add({
-      url: url,
-      likes:0,
-      comments:[],
-      timestamp: Date.now(),
-      user:'User'+Math.floor(Math.random()*1000)
-    });
-    alert('Video uploaded!');
-    fileInput.value='';
-  }
-
-  // 🔹 Render feed
-  function renderFeed(snapshot){
-    feedDiv.innerHTML='';
-    snapshot.forEach(doc=>{
-      const data = doc.data();
+  function renderFeed(){
+    feedDiv.innerHTML = '';
+    sampleVideos.forEach(data=>{
       const container = document.createElement('div');
-      container.className='videoContainer';
+      container.className = 'videoContainer';
 
       const videoEl = document.createElement('video');
       videoEl.src = data.url;
@@ -88,42 +58,28 @@
       videoEl.muted = true;
       videoEl.controls = false;
 
-      // Gradient overlay for better look
       const gradientDiv = document.createElement('div');
-      gradientDiv.className='gradientOverlay';
+      gradientDiv.className = 'gradientOverlay';
 
-      // Overlay buttons
       const overlay = document.createElement('div');
-      overlay.className='overlay';
+      overlay.className = 'overlay';
 
       const likeBtn = document.createElement('button');
-      likeBtn.textContent='❤️ '+data.likes;
-      likeBtn.onclick = async ()=>{
-        await db.collection('videos').doc(doc.id).update({likes:data.likes+1});
-      }
+      likeBtn.textContent = '❤️ '+data.likes;
 
       const commentBtn = document.createElement('button');
-      commentBtn.textContent='💬 '+data.comments.length;
-      commentBtn.onclick = async ()=>{
-        const comment = prompt("Enter comment:");
-        if(comment){
-          await db.collection('videos').doc(doc.id).update({
-            comments:firebase.firestore.FieldValue.arrayUnion(comment)
-          });
-        }
-      }
+      commentBtn.textContent = '💬 '+data.comments;
 
       const shareBtn = document.createElement('button');
-      shareBtn.textContent='🔗';
+      shareBtn.textContent = '🔗';
       shareBtn.onclick = ()=>{ prompt("Copy link:", data.url); }
 
       overlay.appendChild(likeBtn);
       overlay.appendChild(commentBtn);
       overlay.appendChild(shareBtn);
 
-      // Username
       const usernameDiv = document.createElement('div');
-      usernameDiv.className='username';
+      usernameDiv.className = 'username';
       usernameDiv.textContent = data.user;
 
       container.appendChild(videoEl);
@@ -135,10 +91,9 @@
     });
   }
 
-  // 🔹 Listen for videos
-  db.collection('videos').orderBy('timestamp','desc').onSnapshot(renderFeed);
+  renderFeed();
 
-  // 🔹 Auto-play video when in view
+  // Auto-play video when in view
   const observer = new IntersectionObserver(entries=>{
     entries.forEach(entry=>{
       const video = entry.target.querySelector('video');
@@ -147,13 +102,9 @@
     });
   },{threshold:0.8});
 
-  const observeVideos = ()=>{
-    document.querySelectorAll('.videoContainer').forEach(vc=>{
-      observer.observe(vc);
-    });
-  }
-
-  db.collection('videos').orderBy('timestamp','desc').onSnapshot(observeVideos);
+  document.querySelectorAll('.videoContainer').forEach(vc=>{
+    observer.observe(vc);
+  });
 </script>
 
 </body>
