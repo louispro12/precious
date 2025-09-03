@@ -1,19 +1,116 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Who Loves Me?</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mini TikTok</title>
 <style>
-  body { font-family: Arial, sans-serif; text-align: center; padding: 80px 16px; }
-  .clickable { font-size: 1.7rem; color: #2563eb; text-decoration: underline; cursor: pointer; }
-  #chocolate { display: none; font-size: 1.6rem; color: #7c3aed; margin-top: 16px; }
+  body { margin: 0; background: #000; color: #fff; font-family: Arial; }
+  header { padding: 10px; text-align: center; font-size: 24px; }
+  #uploadSection { padding: 10px; text-align: center; }
+  #feed { display: flex; flex-direction: column; align-items: center; }
+  video { width: 100%; max-width: 400px; height: 500px; margin: 10px 0; border-radius: 10px; background: #000; }
+  .videoControls { display: flex; justify-content: space-between; width: 90%; max-width: 400px; margin-bottom: 20px; }
+  button { padding: 5px 10px; border-radius: 5px; border:none; cursor: pointer; }
 </style>
 </head>
 <body>
-  <p class="clickable" onclick="document.getElementById('chocolate').style.display='block'">
-    Who loves me?
-  </p>
-  <p id="chocolate">Buy me chocolate 🍫😉</p>
+
+<header>Mini TikTok</header>
+
+<div id="uploadSection">
+  <input type="file" id="videoFile" accept="video/*">
+  <button onclick="uploadVideo()">Upload Video</button>
+</div>
+
+<div id="feed"></div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+<script>
+  // 🔹 Firebase Config
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT.firebaseapp.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT.appspot.com",
+    messagingSenderId: "SENDER_ID",
+    appId: "APP_ID"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+  const storage = firebase.storage();
+  const auth = firebase.auth();
+
+  // 🔹 Simple Anonymous Login
+  auth.signInAnonymously().catch(err => console.error(err));
+
+  const feedDiv = document.getElementById('feed');
+
+  // 🔹 Upload Video
+  async function uploadVideo() {
+    const fileInput = document.getElementById('videoFile');
+    const file = fileInput.files[0];
+    if(!file) return alert("Pick a video first!");
+    const storageRef = storage.ref('videos/' + Date.now() + '_' + file.name);
+    await storageRef.put(file);
+    const url = await storageRef.getDownloadURL();
+    await db.collection('videos').add({
+      url: url,
+      likes: 0,
+      comments: [],
+      timestamp: Date.now(),
+      userId: auth.currentUser.uid
+    });
+    alert("Video uploaded!");
+    fileInput.value = '';
+  }
+
+  // 🔹 Render Feed
+  db.collection('videos').orderBy('timestamp','desc').onSnapshot(snapshot => {
+    feedDiv.innerHTML = '';
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      const container = document.createElement('div');
+      const videoEl = document.createElement('video');
+      videoEl.src = data.url;
+      videoEl.controls = true;
+      videoEl.autoplay = false;
+      videoEl.loop = true;
+      
+      const controlsDiv = document.createElement('div');
+      controlsDiv.className = 'videoControls';
+
+      const likeBtn = document.createElement('button');
+      likeBtn.textContent = `❤️ ${data.likes}`;
+      likeBtn.onclick = () => {
+        db.collection('videos').doc(doc.id).update({ likes: data.likes + 1 });
+      };
+
+      const commentBtn = document.createElement('button');
+      commentBtn.textContent = `💬 ${data.comments.length}`;
+      commentBtn.onclick = () => {
+        const comment = prompt("Enter your comment:");
+        if(comment) {
+          db.collection('videos').doc(doc.id).update({
+            comments: firebase.firestore.FieldValue.arrayUnion(comment)
+          });
+        }
+      };
+
+      controlsDiv.appendChild(likeBtn);
+      controlsDiv.appendChild(commentBtn);
+
+      container.appendChild(videoEl);
+      container.appendChild(controlsDiv);
+
+      feedDiv.appendChild(container);
+    });
+  });
+</script>
+
 </body>
 </html>
