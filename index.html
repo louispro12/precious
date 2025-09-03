@@ -9,12 +9,14 @@
   body{background:#000;color:#fff;font-family:Arial,sans-serif;overflow:hidden;}
   #uploadSection{position:fixed;top:10px;width:100%;text-align:center;z-index:100;}
   #uploadSection input{padding:5px;}
-  #feed{display:flex;flex-direction:column;align-items:center;scroll-snap-type:y mandatory;height:100vh;overflow-y:scroll;}
-  .videoContainer{position:relative;width:100%;height:100vh;scroll-snap-align:start;}
-  video{width:100%;height:100%;object-fit:cover;}
-  .overlay{position:absolute;right:10px;bottom:20px;display:flex;flex-direction:column;align-items:center;}
-  .overlay button{margin:10px;padding:10px;border:none;border-radius:50%;background:rgba(0,0,0,0.5);color:white;font-size:18px;cursor:pointer;}
+  #feed{display:flex;flex-direction:column;align-items:center;scroll-snap-type:y mandatory;height:100vh;overflow-y:scroll;scroll-behavior:smooth;}
+  .videoContainer{position:relative;width:100%;height:100vh;scroll-snap-align:start;display:flex;justify-content:center;align-items:center;background:#000;}
+  video{width:100%;height:100%;object-fit:cover;border-radius:0;}
+  .overlay{position:absolute;right:10px;bottom:20px;display:flex;flex-direction:column;align-items:center;z-index:10;}
+  .overlay button{margin:10px;padding:10px;border:none;border-radius:50%;background:rgba(0,0,0,0.5);color:white;font-size:18px;cursor:pointer;transition: transform 0.2s;}
+  .overlay button:hover{transform: scale(1.2);}
   .username{position:absolute;left:10px;bottom:20px;font-size:18px;background:rgba(0,0,0,0.4);padding:5px 10px;border-radius:5px;}
+  .gradientOverlay{position:absolute;width:100%;height:100%;top:0;left:0;background:linear-gradient(to top, rgba(0,0,0,0.6), rgba(0,0,0,0));pointer-events:none;}
 </style>
 </head>
 <body>
@@ -86,6 +88,10 @@
       videoEl.muted = true;
       videoEl.controls = false;
 
+      // Gradient overlay for better look
+      const gradientDiv = document.createElement('div');
+      gradientDiv.className='gradientOverlay';
+
       // Overlay buttons
       const overlay = document.createElement('div');
       overlay.className='overlay';
@@ -107,14 +113,21 @@
         }
       }
 
+      const shareBtn = document.createElement('button');
+      shareBtn.textContent='🔗';
+      shareBtn.onclick = ()=>{ prompt("Copy link:", data.url); }
+
       overlay.appendChild(likeBtn);
       overlay.appendChild(commentBtn);
+      overlay.appendChild(shareBtn);
 
+      // Username
       const usernameDiv = document.createElement('div');
       usernameDiv.className='username';
       usernameDiv.textContent = data.user;
 
       container.appendChild(videoEl);
+      container.appendChild(gradientDiv);
       container.appendChild(overlay);
       container.appendChild(usernameDiv);
 
