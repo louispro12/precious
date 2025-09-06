@@ -1,111 +1,137 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mini TikTok Web - Sample</title>
-<style>
-  *{margin:0;padding:0;box-sizing:border-box;}
-  body{background:#000;color:#fff;font-family:Arial,sans-serif;overflow:hidden;}
-  #feed{display:flex;flex-direction:column;align-items:center;scroll-snap-type:y mandatory;height:100vh;overflow-y:scroll;scroll-behavior:smooth;}
-  .videoContainer{position:relative;width:100%;height:100vh;scroll-snap-align:start;display:flex;justify-content:center;align-items:center;background:#000;}
-  video{width:100%;height:100%;object-fit:cover;border-radius:0;}
-  .overlay{position:absolute;right:10px;bottom:20px;display:flex;flex-direction:column;align-items:center;z-index:10;}
-  .overlay button{margin:10px;padding:10px;border:none;border-radius:50%;background:rgba(0,0,0,0.5);color:white;font-size:18px;cursor:pointer;transition: transform 0.2s;}
-  .overlay button:hover{transform: scale(1.2);}
-  .username{position:absolute;left:10px;bottom:20px;font-size:18px;background:rgba(0,0,0,0.4);padding:5px 10px;border-radius:5px;}
-  .gradientOverlay{position:absolute;width:100%;height:100%;top:0;left:0;background:linear-gradient(to top, rgba(0,0,0,0.6), rgba(0,0,0,0));pointer-events:none;}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mulinde Louis Anthony</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <style>
+    html { scroll-behavior: smooth; }
+    .fade-in { opacity: 0; transform: translateY(20px); transition: all 1s; }
+    .fade-in.show { opacity: 1; transform: translateY(0); }
+  </style>
 </head>
-<body>
+<body class="bg-gray-100 text-gray-800 font-sans">
 
-<div id="feed"></div>
+  <!-- Navbar -->
+  <nav class="fixed top-0 left-0 w-full bg-white shadow z-50">
+    <div class="max-w-6xl mx-auto flex justify-between items-center p-4">
+      <h1 class="font-bold text-xl text-indigo-600">Louis Anthony</h1>
+      <ul class="flex space-x-6">
+        <li><a href="#home" class="hover:text-indigo-600">Home</a></li>
+        <li><a href="#about" class="hover:text-indigo-600">About</a></li>
+        <li><a href="#gallery" class="hover:text-indigo-600">Gallery</a></li>
+        <li><a href="#contact" class="hover:text-indigo-600">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
 
-<script>
-  const sampleVideos = [
-    {
-      url: "https://www.w3schools.com/html/mov_bbb.mp4",
-      user: "User123",
-      likes: 120,
-      comments: 12
-    },
-    {
-      url: "https://www.w3schools.com/html/movie.mp4",
-      user: "CoolGuy",
-      likes: 85,
-      comments: 8
-    },
-    {
-      url: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
-      user: "JaneDoe",
-      likes: 200,
-      comments: 25
-    }
-  ];
+  <!-- Hero/Profile -->
+  <header id="home" class="h-screen flex flex-col justify-center items-center bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-center">
+    <img src="me1.jpg" alt="Profile" class="w-40 h-40 rounded-full border-4 border-white shadow-lg mb-4">
+    <h2 class="text-4xl font-bold">🌟 Mulinde Louis Anthony</h2>
+    <p class="mt-2 text-lg">Student | Content Creator | Dreamer</p>
+    <div class="flex space-x-4 mt-6">
+      <a href="https://www.tiktok.com/@louis_lynx1" target="_blank" class="bg-white text-black p-3 rounded-full shadow hover:bg-gray-200"><i class="fab fa-tiktok text-xl"></i></a>
+      <a href="https://www.instagram.com/louis_lynx1" target="_blank" class="bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 text-white p-3 rounded-full shadow hover:opacity-90"><i class="fab fa-instagram text-xl"></i></a>
+      <a href="https://wa.me/256700210068" target="_blank" class="bg-green-500 text-white p-3 rounded-full shadow hover:bg-green-600"><i class="fab fa-whatsapp text-xl"></i></a>
+    </div>
+  </header>
 
-  const feedDiv = document.getElementById('feed');
+  <!-- About -->
+  <section id="about" class="max-w-5xl mx-auto p-6 mt-16 bg-white rounded-2xl shadow-md fade-in">
+    <h2 class="text-3xl font-bold mb-4 text-indigo-600">About Me</h2>
+    <p class="leading-relaxed">Hi, I’m <strong>Mulinde Louis Anthony</strong>, born on <strong>1st June 2009</strong> at <strong>Mulago Referral Hospital</strong>. I’m a <strong>student at KIMSS</strong>, passionate about learning, content creation, and inspiring others through creativity.</p>
+    <p class="mt-4">On TikTok <a href="https://www.tiktok.com/@louis_lynx1" target="_blank" class="text-purple-600 font-semibold">@louis_lynx1</a>, I create content that spreads positivity, fun, and real vibes. My dream is to become a role model for young people while balancing school, creativity, and growth.</p>
+  </section>
 
-  function renderFeed(){
-    feedDiv.innerHTML = '';
-    sampleVideos.forEach(data=>{
-      const container = document.createElement('div');
-      container.className = 'videoContainer';
+  <!-- Gallery -->
+  <section id="gallery" class="max-w-6xl mx-auto p-6 mt-16">
+    <h2 class="text-3xl font-bold mb-8 text-center text-indigo-600">📸 My Gallery</h2>
+    <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
 
-      const videoEl = document.createElement('video');
-      videoEl.src = data.url;
-      videoEl.autoplay = true;
-      videoEl.loop = true;
-      videoEl.muted = true;
-      videoEl.controls = false;
+      <!-- Me -->
+      <div class="bg-white rounded-xl shadow hover:shadow-lg overflow-hidden fade-in">
+        <img src="me2.jpg" alt="Me" class="w-full h-56 object-cover">
+        <div class="p-4">
+          <h3 class="font-bold">Me</h3>
+          <p>One of my best portraits — I’m always pushing myself to grow and shine.</p>
+        </div>
+      </div>
 
-      const gradientDiv = document.createElement('div');
-      gradientDiv.className = 'gradientOverlay';
+      <div class="bg-white rounded-xl shadow hover:shadow-lg overflow-hidden fade-in">
+        <img src="me3.jpg" alt="Me" class="w-full h-56 object-cover">
+        <div class="p-4">
+          <h3 class="font-bold">Me</h3>
+          <p>Another side of me — creative, confident, and ready to inspire others.</p>
+        </div>
+      </div>
 
-      const overlay = document.createElement('div');
-      overlay.className = 'overlay';
+      <!-- Family -->
+      <div class="bg-white rounded-xl shadow hover:shadow-lg overflow-hidden fade-in">
+        <img src="mom.jpg" alt="Mom" class="w-full h-56 object-cover">
+        <div class="p-4">
+          <h3 class="font-bold">My Mom</h3>
+          <p>The strongest woman in my life, always supporting and guiding me.</p>
+        </div>
+      </div>
 
-      const likeBtn = document.createElement('button');
-      likeBtn.textContent = '❤️ '+data.likes;
+      <div class="bg-white rounded-xl shadow hover:shadow-lg overflow-hidden fade-in">
+        <img src="dad.jpg" alt="Dad" class="w-full h-56 object-cover">
+        <div class="p-4">
+          <h3 class="font-bold">My Dad</h3>
+          <p>A role model of hard work and wisdom — my biggest inspiration.</p>
+        </div>
+      </div>
 
-      const commentBtn = document.createElement('button');
-      commentBtn.textContent = '💬 '+data.comments;
+      <div class="bg-white rounded-xl shadow hover:shadow-lg overflow-hidden fade-in">
+        <img src="sis.jpg" alt="Sister" class="w-full h-56 object-cover">
+        <div class="p-4">
+          <h3 class="font-bold">My Sisters</h3>
+          <p>My sisters are my best friends — always fun, supportive, and caring.</p>
+        </div>
+      </div>
 
-      const shareBtn = document.createElement('button');
-      shareBtn.textContent = '🔗';
-      shareBtn.onclick = ()=>{ prompt("Copy link:", data.url); }
+      <div class="bg-white rounded-xl shadow hover:shadow-lg overflow-hidden fade-in">
+        <img src="bro.jpg" alt="Brother" class="w-full h-56 object-cover">
+        <div class="p-4">
+          <h3 class="font-bold">My Brother</h3>
+          <p>A brother who always has my back — full of energy and love.</p>
+        </div>
+      </div>
 
-      overlay.appendChild(likeBtn);
-      overlay.appendChild(commentBtn);
-      overlay.appendChild(shareBtn);
+    </div>
+  </section>
 
-      const usernameDiv = document.createElement('div');
-      usernameDiv.className = 'username';
-      usernameDiv.textContent = data.user;
+  <!-- Contact -->
+  <section id="contact" class="max-w-4xl mx-auto p-6 mt-16 mb-16 bg-white rounded-2xl shadow-md fade-in">
+    <h2 class="text-3xl font-bold mb-4 text-indigo-600">Let’s Connect</h2>
+    <p class="mb-6">I love connecting with people, sharing ideas, and building genuine relationships. Reach out through any of my socials below:</p>
+    <div class="flex space-x-6">
+      <a href="https://www.tiktok.com/@louis_lynx1" target="_blank" class="text-black text-3xl hover:text-gray-700"><i class="fab fa-tiktok"></i></a>
+      <a href="https://www.instagram.com/louis_lynx1" target="_blank" class="text-pink-600 text-3xl hover:text-pink-700"><i class="fab fa-instagram"></i></a>
+      <a href="https://wa.me/256700210068" target="_blank" class="text-green-600 text-3xl hover:text-green-700"><i class="fab fa-whatsapp"></i></a>
+    </div>
+  </section>
 
-      container.appendChild(videoEl);
-      container.appendChild(gradientDiv);
-      container.appendChild(overlay);
-      container.appendChild(usernameDiv);
+  <!-- Footer -->
+  <footer class="bg-gray-800 text-gray-300 py-6 text-center">
+    <p>© 2025 Mulinde Louis Anthony | All Rights Reserved</p>
+  </footer>
 
-      feedDiv.appendChild(container);
-    });
-  }
-
-  renderFeed();
-
-  // Auto-play video when in view
-  const observer = new IntersectionObserver(entries=>{
-    entries.forEach(entry=>{
-      const video = entry.target.querySelector('video');
-      if(entry.isIntersecting) video.play();
-      else video.pause();
-    });
-  },{threshold:0.8});
-
-  document.querySelectorAll('.videoContainer').forEach(vc=>{
-    observer.observe(vc);
-  });
-</script>
-
+  <!-- Animation Script -->
+  <script>
+    const faders = document.querySelectorAll('.fade-in');
+    const appearOptions = { threshold: 0.2 };
+    const appearOnScroll = new IntersectionObserver(function(entries, observer) {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add('show');
+        observer.unobserve(entry.target);
+      });
+    }, appearOptions);
+    faders.forEach(fader => appearOnScroll.observe(fader));
+  </script>
 </body>
 </html>
